@@ -39,22 +39,35 @@ namespace TorontoWeather
             var weatherData = JObject.Parse(response);
 
             // Pass the parsed weather data to another method for extraction
-            var maxTemperatures = ExtractMaxTemperatures(weatherData);
+            var daysAndTemperatures = ExtractMaxTemperaturesAndDays(weatherData);
 
-            // Optionally, return the extracted temperatures as a string or process further
-            return string.Join(", ", maxTemperatures);
+            // Format the extracted data as a string and return it
+            return daysAndTemperatures;
         }
 
         /// <summary>
-        /// Extracts the daily maximum temperatures from the weather data.
+        /// Extracts the daily maximum temperatures, corresponding days, and day names from the weather data.
         /// </summary>
         /// <param name="weatherData">The weather data as a JObject.</param>
-        /// <returns>An array of daily maximum temperatures in Celsius.</returns>
-        public double[] ExtractMaxTemperatures(JObject weatherData)
+        /// <returns>A formatted string with days, day names, and their corresponding maximum temperatures.</returns>
+        public string ExtractMaxTemperaturesAndDays(JObject weatherData)
         {
-            // Extract the daily maximum temperatures from the JSON data
+            // Extract the days and daily maximum temperatures from the JSON
+            var days = weatherData["daily"]["time"].ToObject<string[]>();
             var maxTemperatures = weatherData["daily"]["temperature_2m_max"].ToObject<double[]>();
-            return maxTemperatures;
+
+            // Build a formatted string with day and temperature pairs
+            var result = "";
+            for (int i = 0; i < days.Length; i++)
+            {
+                // Convert the date string to DateTime to get the day of the week
+                var date = DateTime.Parse(days[i]);
+                var dayName = date.ToString("dddd"); // Gets the full day name (e.g., "Monday")
+
+                result += $"{days[i]} ({dayName}): {maxTemperatures[i]}°C\n";
+            }
+
+            return result;
         }
     }
 }
